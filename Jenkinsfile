@@ -1,5 +1,9 @@
 pipeline {
     agent any
+
+    environment {
+        GITHUB_TOKEN = credentials('github-token')
+    }
     
     stages {
         stage('Clean Workspace') {
@@ -10,7 +14,12 @@ pipeline {
 
         stage('Get Code') {
             steps {
-                git url: 'https://github.com/Keji-dev/todo-list-aws.git', branch: 'develop'
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        git clone https://$GITHUB_TOKEN@github.com/Keji-dev/todo-list-aws.git .
+                        git checkout develop
+                    '''
+                }
             }
         }
 
@@ -73,7 +82,9 @@ pipeline {
             steps {
                 sh '''
                     git checkout master
+                    git pull origin master
                     git merge develop
+                    git push origin master
                 '''
             }
         }
