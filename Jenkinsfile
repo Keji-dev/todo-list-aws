@@ -55,7 +55,7 @@ pipeline {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     sh '''
                         sam build
-                        sam deploy --config-env staging --no-confirm-changeset --resolve-s3 --no-fail-on-empty-changeset
+                        sam deploy --config-env staging 
                     '''
                 }
             }
@@ -69,11 +69,14 @@ pipeline {
             }             
         }
 
-        // stage('Promote') {
-        //     steps {
-
-        //     }
-        // }
+        stage('Promote') {
+            steps {
+                sh '''
+                    git checkout master
+                    git merge develop
+                '''
+            }
+        }
     }
 
     post {
