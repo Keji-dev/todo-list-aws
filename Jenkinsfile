@@ -54,8 +54,8 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     sh '''
-                        sam build --no-interactive
-                        sam deploy --no-interactive --stack-name todo-list-aws-staging --capabilities CAPABILITY_IAM --template-file template.yaml
+                        sam build
+                        sam deploy --config-env staging --no-confirm-changeset --resolve-s3 --no-fail-on-empty-changeset
                     '''
                 }
             }
@@ -64,7 +64,7 @@ pipeline {
         stage('Rest Test') {
             steps {
                 sh '''
-                    python3 -m pytest /test/unit/integration/todoApiTest.py --maxfail=1
+                    python3 -m pytest test/integration/todoApiTest.py --maxfail=1
                 '''
             }             
         }
