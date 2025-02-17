@@ -8,6 +8,10 @@ region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Stage=\"default\""
 image_repositories = []
+resolve_s3 = true
+confirm_changeset = false
+fail_on_empty_changeset = false
+no_disable_rollback = true
 
 [staging]
 [staging.deploy]
@@ -32,3 +36,7 @@ region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Stage=\"production\""
 image_repositories = []
+resolve_s3 = true
+confirm_changeset = false
+fail_on_empty_changeset = false
+no_disable_rollback = true
