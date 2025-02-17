@@ -3,7 +3,9 @@ pipeline {
 
     stages {
         stage('Get Code') {
-            git url: 'https://github.com/Keji-dev/todo-list-aws.git', branch: 'master'
+            steps {
+                git url: 'https://github.com/Keji-dev/todo-list-aws.git', branch: 'master'
+            }
         }
 
         stage('Deploy') {
