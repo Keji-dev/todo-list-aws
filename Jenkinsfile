@@ -20,7 +20,7 @@ pipeline {
         stage('Rest Test') {
             steps {
                 sh '''
-                    python3 -m pytest test/integration/todoApiTest.py -k "test_api_gettodo or test_api_listtodos" --maxfail=1 --disable-warnings
+                    python3 -m pytest test/integration/todoApiTest.py -m api --maxfail=1 --disable-warnings
                 '''
             }             
         }
