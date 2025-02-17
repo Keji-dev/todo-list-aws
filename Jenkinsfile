@@ -86,8 +86,7 @@ pipeline {
                             git checkout master
                             git pull origin master
                             git merge --no-ff -X theirs develop
-                            git checkout master -- Jenkinsfile
-                            git commit -m "Promoting Develop branch on $(date '+%Y-%m-%d %H:%M:%S')"
+                            git restore --source=master -- Jenkinsfile
                             git push origin master
                         '''
                     } catch (Exception e) {
