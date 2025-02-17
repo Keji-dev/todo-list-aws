@@ -85,8 +85,9 @@ pipeline {
                         sh '''
                             git checkout master
                             git pull origin master
-                            git merge --no-ff -X theirs develop
-                            git restore --source=HEAD -- Jenkinsfile
+                            git checkout develop -- . ':!Jenkinsfile'
+                            git commit -m "Merge develop into master (excluding Jenkinsfile) on $(date '+%Y-%m-%d %H:%M:%S')"
+                            git restore --source=master -- Jenkinsfile
                             git push origin master
                         '''
                     } catch (Exception e) {
