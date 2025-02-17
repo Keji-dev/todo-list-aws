@@ -80,12 +80,20 @@ pipeline {
 
         stage('Promote') {
             steps {
-                sh '''
-                    git checkout master
-                    git pull origin master
-                    git merge develop
-                    git push origin master
-                '''
+                script {
+                    try {
+                        sh '''
+                            git checkout master
+                            git pull origin master
+                            git merge --no-ff -X theirs develop
+                            git checkout master -- Jenkinsfile
+                            git commit -m "Promoting Develop branch on $(date '+%Y-%m-%d %H:%M:%S')"
+                            git push origin master
+                        '''
+                    } catch (Exception e) {
+                        error "Merge failed: ${e.message}"
+                    }
+                }
             }
         }
     }
