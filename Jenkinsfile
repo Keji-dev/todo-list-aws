@@ -86,7 +86,7 @@ pipeline {
                             git checkout master
                             git pull origin master
                             git merge --no-ff -X theirs develop
-                            git restore --source=master -- Jenkinsfile
+                            git restore --source=HEAD -- Jenkinsfile
                             git push origin master
                         '''
                     } catch (Exception e) {
