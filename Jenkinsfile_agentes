@@ -108,17 +108,17 @@ pipeline {
             agent any
             steps {
                 script {
-                    def diff = sh(script: "git diff master..develop --quiet -- ':!Jenkinsfile'", returnStatus: true)
+                    def diff = sh(script: "git diff master..develop --quiet -- ':!Jenkinsfile' ':!Jenkinsfile_agentes'", returnStatus: true)
                     
                     if (diff != 0) {
                         sh '''
                             git config user.name "$GITHUB_USER"
                             git config user.email "$GITHUB_EMAIL"
                             git checkout master
-                            git pull origin master
-                            git checkout develop -- . ':!Jenkinsfile'
+                            git ls-files | grep -v Jenkinsfile | xargs git rm -f
+                            git checkout develop -- . ':!Jenkinsfile' ':!Jenkinsfile_agentes'
                             git commit -m "Merge develop into master on $(date '+%Y-%m-%d %H:%M:%S')"
-                            git restore --source=master -- Jenkinsfile
+                            git restore --source=master -- Jenkinsfile Jenkinsfile_agentes
                             git push origin master
                         '''
                     } else {
