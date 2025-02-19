@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent none
 
     environment {
         GITHUB_TOKEN = credentials('github-token')
@@ -10,25 +10,41 @@ pipeline {
     
     stages {
         stage('Clean Workspace') {
-            steps{
-                cleanWs()
+            steps {
+                script {
+                    node ('agent1') {
+                        cleanWs()
+                    }
+                    
+                    node ('agent2') {
+                        cleanWs()
+                    }
+
+                    node ('built-in') {
+                        cleanWs()
+                    }
+                }
             }
         }
 
         stage('Get Code') {
+            agent any
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     sh '''
                         git clone https://$GITHUB_TOKEN@github.com/Keji-dev/todo-list-aws.git .
                         git checkout develop
                     '''
+                    stash name: 'code', includes: '**/*'
                 }
             }
         }
 
         stage('Static Test') {
+            agent {label 'agent1'}
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    unstash 'code'
                     sh '''
                         TIMEOUT=300
                         TIME_ELAPSED=0
@@ -63,29 +79,37 @@ pipeline {
         }
 
         stage('Deploy') {
+            agent any
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                    sh '''
-                        sam build
-                        sam deploy --config-env staging 
-                    '''
+                    script {
+                        sh '''
+                            sam build --template template.yaml
+                            sam deploy --config-env staging
+                        '''
+                    }
                 }
             }
         }
 
         stage('Rest Test') {
+            agent {label 'agent2'}
             steps {
-                sh '''
-                    python3 -m pytest test/integration/todoApiTest.py --maxfail=1
-                '''
+                script {
+                    unstash 'code'
+                    sh """
+                        python3 -m pytest test/integration/todoApiTest.py --maxfail=1
+                    """
+                }
             }             
         }
 
         stage('Promote') {
+            agent any
             steps {
                 script {
                     def diff = sh(script: "git diff master..develop --quiet -- ':!Jenkinsfile'", returnStatus: true)
-
+                    
                     if (diff != 0) {
                         sh '''
                             git config user.name "$GITHUB_USER"
@@ -108,7 +132,19 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            script {
+                node ('agent1') {
+                    cleanWs()
+                }
+
+                node ('agent2') {
+                    cleanWs()
+                }
+
+                node ('built-in') {
+                    cleanWs()
+                }
+            }
         }
     }
 }
