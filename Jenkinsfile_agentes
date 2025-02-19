@@ -1,0 +1,41 @@
+pipeline {
+    agent none
+
+    stages {
+        stage('Get Code') {
+            agent any
+            steps {
+                git url: 'https://github.com/Keji-dev/todo-list-aws.git', branch: 'master'
+                stash name: 'code', includes: '**/*'
+            }
+        }
+
+        stage('Deploy') {
+            agent any
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    sh '''
+                        sam build
+                        sam deploy --config-env production
+                    '''
+                }
+            }
+        }
+
+        stage('Rest Test') {
+            agent {label 'agent2'}
+            steps {
+                unstash 'code'
+                sh '''
+                    python3 -m pytest test/integration/todoApiTest.py -m read --maxfail=1
+                '''
+            }             
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
