@@ -1,17 +1,22 @@
 pipeline {
     agent none
 
+    environment {
+        BASE_URL = credentials('BASE_URL')
+    }
+
     stages {
         stage('Get Code') {
-            agent any
+            agent {label 'agent1'}
             steps {
                 git url: 'https://github.com/Keji-dev/todo-list-aws.git', branch: 'master'
+                sh 'wget https://raw.githubusercontent.com/Keji-dev/todo-list-aws-config/production/samconfig.toml'
                 stash name: 'code', includes: '**/*'
             }
         }
 
         stage('Deploy') {
-            agent any
+            agent {label 'agent1'}
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     sh '''
@@ -35,7 +40,15 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            script {
+                node ('agent1') {
+                    cleanWs()
+                }
+
+                node ('agent2') {
+                    cleanWs()
+                }
+            }
         }
     }
 }

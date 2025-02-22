@@ -1,10 +1,15 @@
 pipeline {
     agent any
 
+    environment {
+        BASE_URL = credentials('BASE_URL')
+    }
+
     stages {
         stage('Get Code') {
             steps {
                 git url: 'https://github.com/Keji-dev/todo-list-aws.git', branch: 'master'
+                sh 'wget https://raw.githubusercontent.com/Keji-dev/todo-list-aws-config/production/samconfig.toml'
             }
         }
 
