@@ -13,14 +13,17 @@ pipeline {
             steps {
                 script {
                     node ('agent1') {
+                        info()
                         cleanWs()
                     }
                     
                     node ('agent2') {
+                        info()
                         cleanWs()
                     }
 
                     node ('built-in') {
+                        info()
                         cleanWs()
                     }
                 }
@@ -31,8 +34,12 @@ pipeline {
             agent any
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                    git url: "https://$GITHUB_TOKEN@github.com/Keji-dev/todo-list-aws.git", branch: 'develop'
-                    sh 'wget https://raw.githubusercontent.com/Keji-dev/todo-list-aws-config/refs/heads/staging/samconfig.toml'
+                    info()
+                    sh '''
+                        git clone https://$GITHUB_TOKEN@github.com/Keji-dev/todo-list-aws.git .
+                        git checkout develop
+                        wget https://raw.githubusercontent.com/Keji-dev/todo-list-aws-config/refs/heads/staging/samconfig.toml
+                    '''
                     stash name: 'code', includes: '**/*'
                 }
             }
@@ -42,6 +49,7 @@ pipeline {
             agent {label 'agent1'}
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    info()
                     unstash 'code'
                     sh '''
                         TIMEOUT=300
@@ -81,6 +89,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
+                        info()
                         sh '''
                             sam build --template template.yaml
                             sam deploy --config-env staging
@@ -94,6 +103,7 @@ pipeline {
             agent {label 'agent2'}
             steps {
                 script {
+                    info()
                     unstash 'code'
                     sh """
                         python3 -m pytest test/integration/todoApiTest.py --maxfail=1
@@ -106,6 +116,7 @@ pipeline {
             agent any
             steps {
                 script {
+                    info()
                     def diff = sh(script: "git diff master..develop --quiet -- ':!Jenkinsfile' ':!Jenkinsfile_agentes'", returnStatus: true)
                     
                     if (diff != 0) {
@@ -119,7 +130,7 @@ pipeline {
                         '''
                     } else {
                         echo "No changes to commit, branches are already in sync."
-                        currentBuild.result = 'UNSTABLE' 
+                        currentBuild.result = 'UNSTABLE'
                     }
                 }
             }
@@ -130,17 +141,28 @@ pipeline {
         always {
             script {
                 node ('agent1') {
+                    info()
                     cleanWs()
                 }
 
                 node ('agent2') {
+                    info()
                     cleanWs()
                 }
 
                 node ('built-in') {
+                    info()
                     cleanWs()
                 }
             }
         }
     }
+}
+
+def info(){
+    sh '''
+        whoami
+        hostname
+        echo $WORKSPACE
+    '''
 }
