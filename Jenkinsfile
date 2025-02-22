@@ -18,10 +18,8 @@ pipeline {
         stage('Get Code') {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                    sh '''
-                        git clone https://$GITHUB_TOKEN@github.com/Keji-dev/todo-list-aws.git .
-                        git checkout develop
-                    '''
+                    git url: "https://$GITHUB_TOKEN@github.com/Keji-dev/todo-list-aws.git", branch: 'develop'
+                    stash name: 'code', includes: '**/*'
                 }
             }
         }
