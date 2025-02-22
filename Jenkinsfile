@@ -91,10 +91,8 @@ pipeline {
                             git config user.name "$GITHUB_USER"
                             git config user.email "$GITHUB_EMAIL"
                             git checkout master
-                            git ls-files | grep -v Jenkinsfile | xargs git rm -f
                             git checkout develop -- . ':!Jenkinsfile' ':!Jenkinsfile_agentes'
                             git commit -m "Merge develop into master on $(date '+%Y-%m-%d %H:%M:%S')"
-                            git restore --source=master -- Jenkinsfile Jenkinsfile_agentes
                             git push origin master
                         '''
                     } else {
