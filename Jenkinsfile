@@ -19,7 +19,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     git url: "https://$GITHUB_TOKEN@github.com/Keji-dev/todo-list-aws.git", branch: 'develop'
-                    stash name: 'code', includes: '**/*'
+                    sh 'wget https://raw.githubusercontent.com/Keji-dev/todo-list-aws-config/refs/heads/staging/samconfig.toml'
                 }
             }
         }
