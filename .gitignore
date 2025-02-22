@@ -7,5 +7,3 @@ pyenvunittests
 coverage.xml
 bandit.out
 flake8.out
-Jenkinsfile
-Jenkinsfile_agentes
